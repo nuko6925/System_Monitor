@@ -1,0 +1,234 @@
+#include "GetCPUPer.hsp"
+#include "Fan_Api.hsp"
+#include "user32.as"
+#uselib "KERNEL32.DLL"
+#func GlobalMemoryStatusEx "GlobalMemoryStatusEx" var
+#include "advapi32.as"
+#define HKEY_LOCAL_MACHINE	$80000002
+#define KEY_QUERY_VALUE	$00000001
+long=128
+sdim processor.getName, long
+RegOpenKeyEx HKEY_LOCAL_MACHINE,("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"),0,KEY_QUERY_VALUE,varptr(hkey)
+RegQueryValueEx hKey,"ProcessorNameString",0,0,varptr(processor.getName),varptr(long)
+RegCloseKey hKey
+screen 0, ginfo(20), ginfo(21)
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
+width 1280, 720
+title "システムモニター"// | リソース"
+font "ＭＳ ゴシック", 16, 17
+cores = sysinfo(17)
+tick = 1000/cores
+mode = "resource"
+color 64, 66, 79 : boxf
+dimtype use, vartype("int"), 61, cores
+dimtype memuse, vartype("int"), 61
+dimtype swapuse, vartype("int"), 61
+*main
+	getkey left, 1
+	redraw 1 : await 20 : redraw 0
+
+	//CPU start
+	//Variables start
+	//Variables end
+	color 64, 66, 79 : boxf
+	if mode == "resource" {
+		mp = ginfo(11) / 720
+		color 64, 66, 79 : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
+		color 255, 255, 255
+		pos 15, 15 : mes "CPU 使用率の履歴"
+		mes "CPU : "+processor.getName
+		boxf 80, 80, ginfo(12)-116, 180*mp
+		frame = (180*mp) - 180
+		w = (ginfo(12)-195)/6
+		sec = (ginfo(12)-195)/59
+		pos 75, 190*mp : mes "60秒"
+		pos 75+w, 190*mp : mes "50"
+		pos 75+w*2, 190*mp : mes "40"
+		pos 75+w*3, 190*mp : mes "30"
+		pos 75+w*4, 190*mp : mes "20"
+		pos 75+w*5, 190*mp : mes "10"
+		pos 75+w*6, 190*mp : mes "0"
+		pos ginfo(12)-106, 75 : mes "100 %"
+		pos ginfo(12)-106, 75+((175*mp)-75)/2 : mes "50 %"
+		pos ginfo(12)-106, 175*mp : mes "0 %"
+		color 200, 200, 200
+		repeat 7
+			boxf 80+(w*cnt), 80, 80+(w*cnt), 185*mp
+		loop
+		boxf 80, 80, ginfo(12)-111, 80
+		boxf 80, 80+((180*mp)-80)/2, ginfo(12)-111, 80+((180*mp)-80)/2
+		boxf 80, 180*mp, ginfo(12)-111, 180*mp
+		core = 0
+		y = 45
+		lencpu = double(double(((180*mp)-80))/double(100.0))
+		offset = double(double(((180*mp)-80))/double(10.0)) + 9.0
+		repeat cores
+			now = cnt
+			time = GetPerCPU(tick)
+			hsvcolor 191-(cnt*4), 200, 200
+			zero = strf("%3.1f", time)
+			if (105+(core*155))+105 >= ginfo(12)-116 {
+				core = 0
+				y = (y + 30)
+				boxf 105+((core)*155), 180*mp+y, 135+((core)*155), 180*mp+(y+20) : color 255, 255, 255 : pos 155+((core)*155), 180*mp+(y+2) : mes "CPU"+cnt+" "+zero+"%"
+			} else {
+	//			if cnt == 0 {
+					repeat 60
+						use(cnt, now) = use(cnt+1, now)
+					loop
+					repeat 60-(mp-1)
+						if use(cnt, now) != null {
+							if ginfo(10) < 1280 {
+								width 1280
+							} if ginfo(11) < 720 {
+								width , 720
+							}
+							if ginfo(10) > 2560 {
+								width 2560
+							} if ginfo(11) > 1440 {
+								width , 1440
+							}
+							line 75+(cnt*sec), int(double(use(cnt, now))*lencpu)-(180*mp)+180+(int(offset)*(mp-1)), 75+(cnt*sec)+sec, int(double(use(cnt+1, now))*lencpu)-(180*mp)+180+(int(offset)*(mp-1))
+						}
+					loop
+					use(60, now) = (180-time)
+	//			}
+				
+				boxf 105+(core*155), 180*mp+y, 135+(core*155), 180*mp+(y+20) : color 255, 255, 255 : pos 155+(core*155), 180*mp+(y+2) : mes "CPU"+cnt+" "+zero+"%"
+				ramy = 180*mp+(y+20)+30
+			}
+			core++
+		loop
+	//	mes ""+((180*mp)-80)+" "+mp+" "+lencpu
+		color 64, 66, 79 : boxf 0, 80, 79, 180*mp
+	/*	color 255, 225, 0
+		line 80, (180-timee)*mp, ginfo(12)-116, (180-timee)*mp
+		zero = strf("%3.1f", timee)
+		boxf 245, 215*mp, 275, 215*mp+20 : color 255, 255, 255 : pos 295, 217*mp : mes "CPU1 "+zero+"%"
+	*/
+		//CPU end
+		
+		if ginfo(10) < 1280 {
+			width 1280
+		} if ginfo(11) < 720 {
+			width , 720
+		}
+		
+		//Memory start
+		//Variables start
+		color 255, 255, 255
+		swapmax = sysinfo(36) : swapfree = sysinfo(37)
+		swapused = (swapmax - swapfree)
+		time = sysinfo(33)
+		ddim buf, 8
+		lpoke buf, 0, 64
+		GlobalMemoryStatusEx buf
+		fmem = double(strf("%I64u", buf.1))
+		lmem = (fmem / 1024 / 1024 / 1024) / 100
+		mem = lmem * time
+		max = lmem * 100
+		
+		fswap = double(strf("%I64u", buf.3))
+		uswap = double(strf("%I64u", buf.4))
+		lswap = (fswap / 1024 / 1024 / 1024) / 100
+		luswap = (uswap / 1024 / 1024 / 1024) / 100
+		us = ((lswap * 100)-(luswap * 100))
+		parc = ((us) / (lswap * 100)) * 100
+		stime = int(parc)
+		map = (lswap * 100) - max
+		swap = (map / 100) * stime
+		//Variables end
+		pos 15, (ramy) : mes "メモリとスワップの履歴"
+		if stime < time {
+			color 200, 0, 0
+			mes "警告 : Out of Memory"
+		}
+		if max > 4.0 {
+			if (max - mem) < 4.0 {
+				color 255, 225, 0
+				mes "注意 : Free Memory is Low"
+			}
+		} else {
+			color 200, 0, 0
+			mes "情報 : Memory is Low"
+		}
+		color 255, 255, 255
+		boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
+		w = (ginfo(12)-195)/6
+		pos 75, ramy+175*mp : mes "60秒"
+		pos 75+w, ramy+175*mp : mes "50"
+		pos 75+w*2, ramy+175*mp : mes "40"
+		pos 75+w*3, ramy+175*mp : mes "30"
+		pos 75+w*4, ramy+175*mp : mes "20"
+		pos 75+w*5, ramy+175*mp : mes "10"
+		pos 75+w*6, ramy+175*mp : mes "0"
+		pos ginfo(12)-106, ramy+65 - 5: mes "100 %"
+		pos ginfo(12)-106, (((ramy+165*mp)-(ramy+65))/2 + ramy+65) - 5 : mes "50 %"
+		pos ginfo(12)-106, ramy+165*mp - 5 : mes "0 %"
+		color 200, 200, 200
+		repeat 7
+			boxf 80+(w*cnt), (ramy+65), 80+(w*cnt), ramy+165*mp+5
+		loop
+		boxf 80, (ramy+65), ginfo(12)-111, (ramy+65)
+		boxf 80, (((ramy+165*mp)-(ramy+65))/2 + ramy+65), ginfo(12)-111, (((ramy+165*mp)-(ramy+65))/2 + ramy+65)
+		boxf 80, ramy+165*mp, ginfo(12)-111, ramy+165*mp
+	
+		color 255, 0, 225
+	/*	if mp == 1 {
+			line 80, 475-time, ginfo(12)-116, 475-time
+		} else : if mp == 2 {
+			line 80, (475+(frame*mp))-(frame-time), ginfo(12)-116, (475+(frame*mp))-(frame-(time))
+		}*/
+		lenram = double(double(((ramy+165*mp)-(ramy+65)))/double(100.0))
+		repeat 60
+			memuse(cnt, now) = memuse(cnt+1, now)
+			swapuse(cnt, now) = swapuse(cnt+1, now)
+		loop
+		repeat 60-(mp-1)
+			if memuse(cnt, now) != null {
+				color 255, 0, 225
+				line 75+(cnt*sec), ramy+165*mp - int(double(memuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(memuse(cnt+1, now))*lenram)
+			}
+			if swapuse(cnt, now) != null {
+				color 83, 217, 151
+				line 75+(cnt*sec), ramy+165*mp - int(double(swapuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(swapuse(cnt+1, now))*lenram)
+			}
+		loop
+		memuse(60, now) = time
+		swapuse(60, now) = stime
+	
+	//	circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
+		color : circle 104, ramy+175*mp+24, 136, ramy+175*mp+56
+		circle 75+(w*4)-31, ramy+175*mp+24, 75+(w*4)+1, ramy+175*mp+56
+		
+		color 255, 0, 225
+		a = -3.166667
+		b = -3.166667
+		repeat (time*2)-((time/25)*4)
+			a -= double(10.0/300.0)
+		loop
+		repeat (stime*2)-((stime/25)*4)
+			b -= double(10.0/300.0)
+		loop
+		fan 105, ramy+175*mp+25, 135, ramy+175*mp+55, 120+sin(a)*100, ramy+175*mp+40+cos(a)*100, 120, ramy+175*mp+25
+		color 255, 255, 255 : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" GiB ("+time+"%) / "+strf("%3.1f", max)+" GiB"
+		color 83, 217, 151
+	//	circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
+		fan 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55, 75+(w*4)-15+sin(b)*100, ramy+175*mp+40+cos(b)*100, 75+(w*4)-15, ramy+175*mp+25
+		color 255, 255, 255 : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" GiB ("+stime+"%) / "+strf("%3.1f", map)+" GiB"
+		color 64, 66, 79 : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
+		color 64, 66, 79 : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
+		
+		color 64, 66, 79 : boxf 0, ramy+65, 79, ramy+165*mp
+		//Memory end
+	}
+	goto *main
+*mchange_r
+	mode = "resource"
+	title "システムモニター | リソース"
+	return
+*mchange_f
+	mode = "file"
+	title "システムモニター | ファイルシステム"
+	return
