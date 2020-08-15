@@ -1,0 +1,39 @@
+#module
+	#uselib "gdi32.dll"
+		#func CreatePen "CreatePen" int,int,int
+		#func GetStockObject "GetStockObject" int
+		#func CreateSolidBrush "CreateSolidBrush" int
+		#func SelectObject "SelectObject" int,int
+		#func Pie "Pie" int,int,int,int,int,int,int,int,int
+		#func DeleteObject "DeleteObject" int
+	#uselib  "user32.dll"
+		#func ReleaseDC "ReleaseDC" int,int
+
+//扇描画命令 fan
+//px,py,ex,ey=扇を円に見立てた座標（circle命令と同じ）
+//gox,goy=扇の開始点（無限直線座標で指定。半時計回り）
+//enx,eny=扇の終了点（無限直線座標で指定。半時計回り）
+//この命令は再描画スイッチがONの状態でも画面に反映されないので、実行後必ずredraw 1を使って再描画すること。
+#deffunc fan int px , int py , int ex , int ey , int gox , int goy , int enx , int eny
+
+	mref bmscr,67
+	col = bmscr(40)
+	
+	prm=px,py,ex,ey,gox,goy,enx,eny
+	CreatePen 0,0,col : pen=stat
+	if pen==0 : return -1
+	GetStockObject NULL_BRUSH : brush=stat
+	if brush==0 : return -1
+	CreateSolidBrush col : brush=stat
+
+	SelectObject hdc,pen   : oldpen=stat
+	SelectObject hdc,brush : oldbrush=stat
+	Pie hdc,prm(0),prm(1),prm(2),prm(3),prm(4),prm(5),prm(6),prm(7)
+
+	SelectObject hdc,oldpen
+	SelectObject hdc,oldbrush
+	DeleteObject brush
+	DeleteObject pen
+	ReleaseDC hwnd,hdc
+return 0
+#global
