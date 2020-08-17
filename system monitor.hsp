@@ -1,6 +1,7 @@
 #include "GetCPUPer.hsp"
 #include "Fan_Api.hsp"
 #include "user32.as"
+#include "winmm.as"
 #uselib "KERNEL32.DLL"
 #func GlobalMemoryStatusEx "GlobalMemoryStatusEx" var
 #include "advapi32.as"
@@ -21,9 +22,9 @@ cores = sysinfo(17)
 tick = 1000/cores
 mode = "resource"
 color 64, 66, 79 : boxf
-dimtype use, vartype("int"), 61, cores
-dimtype memuse, vartype("int"), 61
-dimtype swapuse, vartype("int"), 61
+dimtype use, vartype("int"), 71, cores+1
+dimtype memuse, vartype("int"), 71
+dimtype swapuse, vartype("int"), 71
 *main
 	getkey left, 1
 	redraw 1 : await 20 : redraw 0
@@ -36,6 +37,9 @@ dimtype swapuse, vartype("int"), 61
 		mp = ginfo(11) / 720
 		color 64, 66, 79 : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
 		color 255, 255, 255
+		pos ginfo(12)-215, 15 : mes ""+strf("%d/%02d/%02d %02d:%02d:%02d", gettime(0), gettime(1), gettime(3), gettime(4), gettime(5), gettime(6))
+		timeGetTime
+		mes ""+strf("%02d日 %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
 		pos 15, 15 : mes "CPU 使用率の履歴"
 		mes "CPU : "+processor.getName
 		boxf 80, 80, ginfo(12)-116, 180*mp
@@ -191,7 +195,7 @@ dimtype swapuse, vartype("int"), 61
 				line 75+(cnt*sec), ramy+165*mp - int(double(memuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(memuse(cnt+1, now))*lenram)
 			}
 			if swapuse(cnt, now) != null {
-				color 83, 217, 151
+				color 0, 186, 255
 				line 75+(cnt*sec), ramy+165*mp - int(double(swapuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(swapuse(cnt+1, now))*lenram)
 			}
 		loop
@@ -199,10 +203,11 @@ dimtype swapuse, vartype("int"), 61
 		swapuse(60, now) = stime
 	
 	//	circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
-		color : circle 104, ramy+175*mp+24, 136, ramy+175*mp+56
-		circle 75+(w*4)-31, ramy+175*mp+24, 75+(w*4)+1, ramy+175*mp+56
+		color : circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
+		circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		
 		color 255, 0, 225
+		/*
 		a = -3.166667
 		b = -3.166667
 		repeat (time*2)-((time/25)*4)
@@ -211,9 +216,12 @@ dimtype swapuse, vartype("int"), 61
 		repeat (stime*2)-((stime/25)*4)
 			b -= double(10.0/300.0)
 		loop
+*/
+		pf a, time
+		pf b, stime
 		fan 105, ramy+175*mp+25, 135, ramy+175*mp+55, 120+sin(a)*100, ramy+175*mp+40+cos(a)*100, 120, ramy+175*mp+25
 		color 255, 255, 255 : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" GiB ("+time+"%) / "+strf("%3.1f", max)+" GiB"
-		color 83, 217, 151
+		color 0, 186, 255
 	//	circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		fan 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55, 75+(w*4)-15+sin(b)*100, ramy+175*mp+40+cos(b)*100, 75+(w*4)-15, ramy+175*mp+25
 		color 255, 255, 255 : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" GiB ("+stime+"%) / "+strf("%3.1f", map)+" GiB"
