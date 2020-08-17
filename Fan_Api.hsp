@@ -36,4 +36,13 @@
 	DeleteObject pen
 	ReleaseDC hwnd,hdc
 return 0
+
+#deffunc pf var p1, int perc
+
+	a = -3.166667
+	repeat (perc*2)-((perc/25)*4)
+		a -= double(10.0/300.0)
+	loop
+	p1 = a
+return
 #global
