@@ -1,3 +1,3 @@
 # System_Monitor
 Ubuntu-like resource monitor
-![image](https://user-images.githubusercontent.com/25288674/90366424-3cf16c00-e0a2-11ea-862d-6c51799d51e4.png)
+![image](https://user-images.githubusercontent.com/25288674/90860939-e350b080-e3c5-11ea-9878-ee25ccd9020c.png)
