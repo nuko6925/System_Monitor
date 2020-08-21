@@ -1,4 +1,5 @@
 #include "GetCPUPer.hsp"
+#include "Color_Api.hsp"
 #include "Fan_Api.hsp"
 #include "user32.as"
 #include "winmm.as"
@@ -7,6 +8,7 @@
 #include "advapi32.as"
 #define HKEY_LOCAL_MACHINE	$80000002
 #define KEY_QUERY_VALUE	$00000001
+#define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
 long=128
 sdim processor.getName, long
 RegOpenKeyEx HKEY_LOCAL_MACHINE,("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"),0,KEY_QUERY_VALUE,varptr(hkey)
@@ -26,14 +28,23 @@ color 64, 66, 79 : boxf
 dimtype use, vartype("int"), 131, cores+1
 dimtype memuse, vartype("int"), 131
 dimtype swapuse, vartype("int"), 131
+dimtype memcol, vartype("int"), 3
+dimtype swapcol, vartype("int"), 3
+dimtype theme, vartype("int"), 3
+dimtype graph, vartype("int"), 3
+memcol(0) = 255 : memcol(1) = 0 : memcol(2) = 225
+swapcol(0) = 0 : swapcol(1) = 186 : swapcol(2) = 255
+theme(0) = 64 : theme(1) = 66 : theme(2) = 79
+graph(0) = 255 : graph(1) = 255 : graph(2) = 255
 *main
 	getkey left, 1
+	getkey right, 2
 	redraw 1 : await 20 : redraw 0
 
 	//CPU start
 	//Variables start
 	//Variables end
-	color 64, 66, 79 : boxf
+	color theme(0), theme(1), theme(2) : boxf
 	if mode == "resource" {
 		clrobj
 		objsize 100, 16
@@ -43,14 +54,16 @@ dimtype swapuse, vartype("int"), 131
 			pos ginfo(12)-115, ginfo(13)-50 : button gosub "500ms", *sec_h
 		}
 		mp = ginfo(11) / 720
-		color 64, 66, 79 : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
+		color theme(0), theme(1), theme(2) : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
 		color 255, 255, 255
 		pos ginfo(12)-215, 15 : mes ""+strf("%d/%02d/%02d %02d:%02d:%02d", gettime(0), gettime(1), gettime(3), gettime(4), gettime(5), gettime(6))
 		timeGetTime
 		mes ""+strf("%02d日 %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
 		pos 15, 15 : mes "CPU 使用率の履歴"
 		mes "CPU : "+processor.getName
+		color graph(0), graph(1), graph(2)
 		boxf 80, 80, ginfo(12)-116, 180*mp
+		color 255, 255, 255
 		frame = (180*mp) - 180
 		w = (ginfo(12)-195)/6
 		sec = (ginfo(12)-195)/((120/tmp)-1)
@@ -113,7 +126,7 @@ dimtype swapuse, vartype("int"), 131
 			core++
 		loop
 	//	mes ""+((180*mp)-80)+" "+mp+" "+lencpu
-		color 64, 66, 79 : boxf 0, 80, 79, 180*mp
+		color theme(0), theme(1), theme(2) : boxf 0, 80, 79, 180*mp
 	/*	color 255, 225, 0
 		line 80, (180-timee)*mp, ginfo(12)-116, (180-timee)*mp
 		zero = strf("%3.1f", timee)
@@ -169,8 +182,9 @@ dimtype swapuse, vartype("int"), 131
 			color 200, 0, 0
 			mes "情報 : Memory is Low"
 		}
-		color 255, 255, 255
+		color graph(0), graph(1), graph(2)
 		boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
+		color 255, 255, 255
 		w = (ginfo(12)-195)/6
 		pos 75, ramy+175*mp : mes ""+(120/tmp)+"秒"
 		pos 75+w, ramy+175*mp : mes ""+((120/tmp)-(20/tmp))
@@ -190,7 +204,7 @@ dimtype swapuse, vartype("int"), 131
 		boxf 80, (((ramy+165*mp)-(ramy+65))/2 + ramy+65), ginfo(12)-111, (((ramy+165*mp)-(ramy+65))/2 + ramy+65)
 		boxf 80, ramy+165*mp, ginfo(12)-111, ramy+165*mp
 	
-		color 255, 0, 225
+		color memcol(0), memcol(1), memcol(2)
 	/*	if mp == 1 {
 			line 80, 475-time, ginfo(12)-116, 475-time
 		} else : if mp == 2 {
@@ -203,11 +217,11 @@ dimtype swapuse, vartype("int"), 131
 		loop
 		repeat (120/tmp)-(mp-1)
 			if memuse(cnt, now) != null {
-				color 255, 0, 225
+				color memcol(0), memcol(1), memcol(2)
 				line 75+(cnt*sec), ramy+165*mp - int(double(memuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(memuse(cnt+1, now))*lenram)
 			}
 			if swapuse(cnt, now) != null {
-				color 0, 186, 255
+				color swapcol(0), swapcol(1), swapcol(2)
 				line 75+(cnt*sec), ramy+165*mp - int(double(swapuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(swapuse(cnt+1, now))*lenram)
 			}
 		loop
@@ -218,7 +232,7 @@ dimtype swapuse, vartype("int"), 131
 		color : circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
 		circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		
-		color 255, 0, 225
+		color memcol(0), memcol(1), memcol(2)
 		/*
 		a = -3.166667
 		b = -3.166667
@@ -244,7 +258,7 @@ dimtype swapuse, vartype("int"), 131
 			tania = "TiB"
 		}
 		color 255, 255, 255 : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" "+tania+" ("+time+"%) / "+strf("%3.1f", max)+" "+tanib
-		color 0, 186, 255
+		color swapcol(0), swapcol(1), swapcol(2)
 	//	circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		fan 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55, 75+(w*4)-15+sin(b)*100, ramy+175*mp+40+cos(b)*100, 75+(w*4)-15, ramy+175*mp+25
 		if map >= 1024.0 {
@@ -255,10 +269,54 @@ dimtype swapuse, vartype("int"), 131
 			tanic = "TiB"
 		}
 		color 255, 255, 255 : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
-		color 64, 66, 79 : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
-		color 64, 66, 79 : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
+		color theme(0), theme(1), theme(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
+		color theme(0), theme(1), theme(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
 		
-		color 64, 66, 79 : boxf 0, ramy+65, 79, ramy+165*mp
+		color theme(0), theme(1), theme(2) : boxf 0, ramy+65, 79, ramy+165*mp
+		//Memory Color start
+		if right == 1 {
+			if mousex >= 105 {
+				if mousex <= 135 {
+					if mousey >= ramy+175*mp+25 {
+						if mousey <= ramy+175*mp+55 {
+							mtype = 0
+							gosub *get
+						}
+					}
+				}
+			} if mousex >= 75+(w*4)-30 {
+				if mousex <= 75+(w*4) {
+					if mousey >= ramy+175*mp+25 {
+						if mousey <= ramy+175*mp+55 {
+							mtype = 1
+							gosub *get
+						}
+					}
+				}
+			}
+		}
+		//Memory Color end
+		//Theme start
+		if right == 1 {
+			pget mousex, mousey
+			if ginfo_r = theme(0) {
+				if ginfo_g = theme(1) {
+					if ginfo_b = theme(2) {
+						mtype = 2
+						gosub *get
+					}
+				}
+			}
+			if ginfo_r = graph(0) {
+				if ginfo_g = graph(1) {
+					if ginfo_b = graph(2) {
+						mtype = 3
+						gosub *get
+					}
+				}
+			}
+		}
+		//Theme end
 		//Memory end
 	}
 	goto *main
@@ -301,4 +359,18 @@ dimtype swapuse, vartype("int"), 131
 	loop
 	title "システムモニター | (500ms)"
 	tick = (500*tmp)/cores
+	return
+*get
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		if mtype == 0 {
+			memcol(0) = ginfo(16) : memcol(1) = ginfo(17) : memcol(2) = ginfo(18)
+		} if mtype == 1 {
+			swapcol(0) = ginfo(16) : swapcol(1) = ginfo(17) : swapcol(2) = ginfo(18)
+		} if mtype == 2 {
+			theme(0) = ginfo(16) : theme(1) = ginfo(17) : theme(2) = ginfo(18)
+		} if mtype == 3 {
+			graph(0) = ginfo(16) : graph(1) = ginfo(17) : graph(2) = ginfo(18)
+		}
+	}
 	return

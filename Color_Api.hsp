@@ -1,0 +1,17 @@
+#module
+
+#uselib "comdlg32"
+#cfunc ChooseColor "ChooseColorA" int
+
+#deffunc dialog_color int p1, int p2, int p3
+	dim sCHOOSECOLOR, 9
+	if p3 : lpCustColor = p3 : else : lpCustColor = varptr (hoge)
+	sCHOOSECOLOR = 36, hwnd, 0, p2, lpCustColor, $1 | p1
+
+	if ChooseColor (varptr (sCHOOSECOLOR)) {
+		mref BMSCR, 67
+		BMSCR.40 = sCHOOSECOLOR.3
+	}
+	return stat
+
+#global
