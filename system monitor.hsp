@@ -16,15 +16,16 @@ screen 0, ginfo(20), ginfo(21)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 width 1280, 720
-title "システムモニター"// | リソース"
+title "システムモニター | (1000ms)"
 font "ＭＳ ゴシック", 16, 17
 cores = sysinfo(17)
-tick = 1000/cores
+tmp = 2
+tick = (500*tmp)/cores
 mode = "resource"
 color 64, 66, 79 : boxf
-dimtype use, vartype("int"), 71, cores+1
-dimtype memuse, vartype("int"), 71
-dimtype swapuse, vartype("int"), 71
+dimtype use, vartype("int"), 131, cores+1
+dimtype memuse, vartype("int"), 131
+dimtype swapuse, vartype("int"), 131
 *main
 	getkey left, 1
 	redraw 1 : await 20 : redraw 0
@@ -34,6 +35,13 @@ dimtype swapuse, vartype("int"), 71
 	//Variables end
 	color 64, 66, 79 : boxf
 	if mode == "resource" {
+		clrobj
+		objsize 100, 16
+		if tmp == 1 {
+			pos ginfo(12)-115, ginfo(13)-32 : button gosub "1000ms", *sec_o
+		} if tmp == 2 {
+			pos ginfo(12)-115, ginfo(13)-50 : button gosub "500ms", *sec_h
+		}
 		mp = ginfo(11) / 720
 		color 64, 66, 79 : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
 		color 255, 255, 255
@@ -45,13 +53,13 @@ dimtype swapuse, vartype("int"), 71
 		boxf 80, 80, ginfo(12)-116, 180*mp
 		frame = (180*mp) - 180
 		w = (ginfo(12)-195)/6
-		sec = (ginfo(12)-195)/59
-		pos 75, 190*mp : mes "60秒"
-		pos 75+w, 190*mp : mes "50"
-		pos 75+w*2, 190*mp : mes "40"
-		pos 75+w*3, 190*mp : mes "30"
-		pos 75+w*4, 190*mp : mes "20"
-		pos 75+w*5, 190*mp : mes "10"
+		sec = (ginfo(12)-195)/((120/tmp)-1)
+		pos 75, 190*mp : mes ""+(120/tmp)+"秒"
+		pos 75+w, 190*mp : mes ""+((120/tmp)-(20/tmp))
+		pos 75+w*2, 190*mp : mes ""+((120/tmp)-(40/tmp))
+		pos 75+w*3, 190*mp : mes ""+((120/tmp)-(60/tmp))
+		pos 75+w*4, 190*mp : mes ""+((120/tmp)-(80/tmp))
+		pos 75+w*5, 190*mp : mes ""+((120/tmp)-(100/tmp))
 		pos 75+w*6, 190*mp : mes "0"
 		pos ginfo(12)-106, 75 : mes "100 %"
 		pos ginfo(12)-106, 75+((175*mp)-75)/2 : mes "50 %"
@@ -78,10 +86,10 @@ dimtype swapuse, vartype("int"), 71
 				boxf 105+((core)*155), 180*mp+y, 135+((core)*155), 180*mp+(y+20) : color 255, 255, 255 : pos 155+((core)*155), 180*mp+(y+2) : mes "CPU"+cnt+" "+zero+"%"
 			} else {
 	//			if cnt == 0 {
-					repeat 60
+					repeat (120/tmp)
 						use(cnt, now) = use(cnt+1, now)
 					loop
-					repeat 60-(mp-1)
+					repeat (120/tmp)-(mp-1)
 						if use(cnt, now) != null {
 							if ginfo(10) < 1280 {
 								width 1280
@@ -96,7 +104,7 @@ dimtype swapuse, vartype("int"), 71
 							line 75+(cnt*sec), int(double(use(cnt, now))*lencpu)-(180*mp)+180+(int(offset)*(mp-1)), 75+(cnt*sec)+sec, int(double(use(cnt+1, now))*lencpu)-(180*mp)+180+(int(offset)*(mp-1))
 						}
 					loop
-					use(60, now) = (180-time)
+					use((120/tmp), now) = (180-time)
 	//			}
 				
 				boxf 105+(core*155), 180*mp+y, 135+(core*155), 180*mp+(y+20) : color 255, 255, 255 : pos 155+(core*155), 180*mp+(y+2) : mes "CPU"+cnt+" "+zero+"%"
@@ -146,26 +154,30 @@ dimtype swapuse, vartype("int"), 71
 		pos 15, (ramy) : mes "メモリとスワップの履歴"
 		if stime < time {
 			color 200, 0, 0
-			mes "警告 : Out of Memory"
+			if stime > 80 {
+				mes "警告 : Out of Swap"
+			} else : if time > 80 {
+				mes "警告 : Out of Memory"
+			}
 		}
-		if max > 4.0 {
+		if max > 12.0 {
 			if (max - mem) < 4.0 {
 				color 255, 225, 0
 				mes "注意 : Free Memory is Low"
 			}
-		} else {
+		} else : if max < 4.0 {
 			color 200, 0, 0
 			mes "情報 : Memory is Low"
 		}
 		color 255, 255, 255
 		boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
 		w = (ginfo(12)-195)/6
-		pos 75, ramy+175*mp : mes "60秒"
-		pos 75+w, ramy+175*mp : mes "50"
-		pos 75+w*2, ramy+175*mp : mes "40"
-		pos 75+w*3, ramy+175*mp : mes "30"
-		pos 75+w*4, ramy+175*mp : mes "20"
-		pos 75+w*5, ramy+175*mp : mes "10"
+		pos 75, ramy+175*mp : mes ""+(120/tmp)+"秒"
+		pos 75+w, ramy+175*mp : mes ""+((120/tmp)-(20/tmp))
+		pos 75+w*2, ramy+175*mp : mes ""+((120/tmp)-(40/tmp))
+		pos 75+w*3, ramy+175*mp : mes ""+((120/tmp)-(60/tmp))
+		pos 75+w*4, ramy+175*mp : mes ""+((120/tmp)-(80/tmp))
+		pos 75+w*5, ramy+175*mp : mes ""+((120/tmp)-(100/tmp))
 		pos 75+w*6, ramy+175*mp : mes "0"
 		pos ginfo(12)-106, ramy+65 - 5: mes "100 %"
 		pos ginfo(12)-106, (((ramy+165*mp)-(ramy+65))/2 + ramy+65) - 5 : mes "50 %"
@@ -185,11 +197,11 @@ dimtype swapuse, vartype("int"), 71
 			line 80, (475+(frame*mp))-(frame-time), ginfo(12)-116, (475+(frame*mp))-(frame-(time))
 		}*/
 		lenram = double(double(((ramy+165*mp)-(ramy+65)))/double(100.0))
-		repeat 60
+		repeat (120/tmp)
 			memuse(cnt, now) = memuse(cnt+1, now)
 			swapuse(cnt, now) = swapuse(cnt+1, now)
 		loop
-		repeat 60-(mp-1)
+		repeat (120/tmp)-(mp-1)
 			if memuse(cnt, now) != null {
 				color 255, 0, 225
 				line 75+(cnt*sec), ramy+165*mp - int(double(memuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(memuse(cnt+1, now))*lenram)
@@ -199,8 +211,8 @@ dimtype swapuse, vartype("int"), 71
 				line 75+(cnt*sec), ramy+165*mp - int(double(swapuse(cnt, now))*lenram), 75+(cnt*sec)+sec, ramy+165*mp - int(double(swapuse(cnt+1, now))*lenram)
 			}
 		loop
-		memuse(60, now) = time
-		swapuse(60, now) = stime
+		memuse((120/tmp), now) = time
+		swapuse((120/tmp), now) = stime
 	
 	//	circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
 		color : circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
@@ -220,11 +232,29 @@ dimtype swapuse, vartype("int"), 71
 		pf a, time
 		pf b, stime
 		fan 105, ramy+175*mp+25, 135, ramy+175*mp+55, 120+sin(a)*100, ramy+175*mp+40+cos(a)*100, 120, ramy+175*mp+25
-		color 255, 255, 255 : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" GiB ("+time+"%) / "+strf("%3.1f", max)+" GiB"
+		tania = "GiB"
+		tanib = "GiB"
+		tanic = "GiB"
+		tanid = "GiB"
+		if max >= 1024.0 {
+			max = double(double(max) / double(1024.0))
+			tanib = "TiB"
+		} if mem >= 1024.0 {
+			mem = double(double(mem) / double(1024.0))
+			tania = "TiB"
+		}
+		color 255, 255, 255 : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" "+tania+" ("+time+"%) / "+strf("%3.1f", max)+" "+tanib
 		color 0, 186, 255
 	//	circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		fan 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55, 75+(w*4)-15+sin(b)*100, ramy+175*mp+40+cos(b)*100, 75+(w*4)-15, ramy+175*mp+25
-		color 255, 255, 255 : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" GiB ("+stime+"%) / "+strf("%3.1f", map)+" GiB"
+		if map >= 1024.0 {
+			map = double(double(map) / double(1024.0))
+			tanid = "TiB"
+		} if swap >= 1024.0 {
+			swap = double(double(swap) / double(1024.0))
+			tanic = "TiB"
+		}
+		color 255, 255, 255 : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
 		color 64, 66, 79 : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
 		color 64, 66, 79 : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
 		
@@ -239,4 +269,36 @@ dimtype swapuse, vartype("int"), 71
 *mchange_f
 	mode = "file"
 	title "システムモニター | ファイルシステム"
+	return
+*sec_o
+	tmp = 2
+	now = 0
+	repeat cores
+		repeat 121
+			use(cnt, now) = null
+		loop
+	now++
+	loop
+	repeat 121
+		memuse(cnt, 31) = null
+		swapuse(cnt, 31) = null
+	loop
+	title "システムモニター | (1000ms)"
+	tick = (500*tmp)/cores
+	return
+*sec_h
+	tmp = 1
+	now = 0
+	repeat cores
+		repeat 121
+			use(cnt, now) = null
+		loop
+	now++
+	loop
+	repeat 121
+		memuse(cnt, 31) = null
+		swapuse(cnt, 31) = null
+	loop
+	title "システムモニター | (500ms)"
+	tick = (500*tmp)/cores
 	return
