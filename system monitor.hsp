@@ -117,12 +117,13 @@ dimtype swapuse, vartype("int"), 131
 		mp = ginfo(11) / 720
 		color theme(0), theme(1), theme(2) : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
 		color char(0), char(1), char(2)
-		pos ginfo(12)-215, 15 : mes ""+strf("%d/%02d/%02d %02d:%02d:%02d", gettime(0), gettime(1), gettime(3), gettime(4), gettime(5), gettime(6))
 		timeGetTime
 		if lang == "JP" {
+			pos ginfo(12)-215, 15 : mes ""+strf("%d/%02d/%02d %02d:%02d:%02d", gettime(0), gettime(1), gettime(3), gettime(4), gettime(5), gettime(6))
 			mes ""+strf("%02d“ú %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
 			pos 15, 15 : mes "CPU Žg—p—¦‚Ì—š—ð"
 		} else {
+			pos ginfo(12)-215, 15 : mes ""+strf("%02d/%02d/%d %02d:%02d:%02d", gettime(1), gettime(3), gettime(0), gettime(4), gettime(5), gettime(6))
 			mes ""+strf("%d Days %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
 			pos 15, 15 : mes "CPU Usage history"
 		}
@@ -134,15 +135,15 @@ dimtype swapuse, vartype("int"), 131
 		sec = (ginfo(12)-195)/((120/tmp)-1)
 		color char(0), char(1), char(2)
 		if lang == "JP" {
-			pos 75, 190*mp : mes ""+(120/tmp)+"•b"
+			pos 75, 190*mp : mes "60•b"
 		} else {
-			pos 75, 190*mp : mes ""+(120/tmp)+"s"
+			pos 75, 190*mp : mes "60s"
 		}
-		pos 75+w, 190*mp : mes ""+((120/tmp)-(20/tmp))
-		pos 75+w*2, 190*mp : mes ""+((120/tmp)-(40/tmp))
-		pos 75+w*3, 190*mp : mes ""+((120/tmp)-(60/tmp))
-		pos 75+w*4, 190*mp : mes ""+((120/tmp)-(80/tmp))
-		pos 75+w*5, 190*mp : mes ""+((120/tmp)-(100/tmp))
+		pos 75+w, 190*mp : mes "50"
+		pos 75+w*2, 190*mp : mes "40"
+		pos 75+w*3, 190*mp : mes "30"
+		pos 75+w*4, 190*mp : mes "20"
+		pos 75+w*5, 190*mp : mes "10"
 		pos 75+w*6, 190*mp : mes "0"
 		pos ginfo(12)-106, 75 : mes "100 %"
 		pos ginfo(12)-106, 75+((175*mp)-75)/2 : mes "50 %"
@@ -278,15 +279,15 @@ dimtype swapuse, vartype("int"), 131
 		w = (ginfo(12)-195)/6
 		color char(0), char(1), char(2)
 		if lang == "JP" {
-			pos 75, ramy+175*mp : mes ""+(120/tmp)+"•b"
+			pos 75, ramy+175*mp : mes "60•b"
 		} else {
-			pos 75, ramy+175*mp : mes ""+(120/tmp)+"s"
+			pos 75, ramy+175*mp : mes "60s"
 		}
-		pos 75+w, ramy+175*mp : mes ""+((120/tmp)-(20/tmp))
-		pos 75+w*2, ramy+175*mp : mes ""+((120/tmp)-(40/tmp))
-		pos 75+w*3, ramy+175*mp : mes ""+((120/tmp)-(60/tmp))
-		pos 75+w*4, ramy+175*mp : mes ""+((120/tmp)-(80/tmp))
-		pos 75+w*5, ramy+175*mp : mes ""+((120/tmp)-(100/tmp))
+		pos 75+w, ramy+175*mp : mes "50"
+		pos 75+w*2, ramy+175*mp : mes "40"
+		pos 75+w*3, ramy+175*mp : mes "30"
+		pos 75+w*4, ramy+175*mp : mes "20"
+		pos 75+w*5, ramy+175*mp : mes "10"
 		pos 75+w*6, ramy+175*mp : mes "0"
 		pos ginfo(12)-106, ramy+65 - 5: mes "100 %"
 		pos ginfo(12)-106, (((ramy+165*mp)-(ramy+65))/2 + ramy+65) - 5 : mes "50 %"
