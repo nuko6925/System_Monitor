@@ -19,18 +19,18 @@ screen 0, ginfo(20), ginfo(21)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 width 1280, 720
-title "システムモニター | (1000ms)"
-font "ＭＳ ゴシック", 16, 17
 cores = sysinfo(17)
 tmp = 2
 tick = (500*tmp)/cores
 mode = "resource"
+font "ＭＳ ゴシック", 16, 17
 dimtype memcol, vartype("int"), 3
 dimtype swapcol, vartype("int"), 3
 dimtype theme, vartype("int"), 3
 dimtype graph, vartype("int"), 3
 dimtype lin, vartype("int"), 3
 dimtype char, vartype("int"), 3
+dimtype fon, vartype("str"), 1
 exist "SysMonitor.ini"
 if strsize = -1 {
 	INIInit "SysMonitor.ini"
@@ -52,32 +52,46 @@ if strsize = -1 {
 	INISet "Char","red","255"
 	INISet "Char","green","255"
 	INISet "Char","blue","255"
+	INISet "Font","name","ＭＳ ゴシック"
+	INISet "Lang","name","JP"
+	INISet "Tick","timing","2"
 	memcol(0) = 255 : memcol(1) = 0 : memcol(2) = 225
 	swapcol(0) = 0 : swapcol(1) = 186 : swapcol(2) = 255
 	theme(0) = 64 : theme(1) = 66 : theme(2) = 79
 	graph(0) = 255 : graph(1) = 255 : graph(2) = 255
 	lin(0) = 200 : lin(1) = 200 : lin(2) = 200
 	char(0) = 255 : char(1) = 255 : char(2) = 255
+	tmp = 2
+	tick = (500*tmp)/cores
+	lang = "JP"
 } else {
 	INIInit "SysMonitor.ini"
-	if INIGet("Memory","red"){memcol(0) = int(refstr)}
-	if INIGet("Memory","green"){memcol(1) = int(refstr)}
-	if INIGet("Memory","blue"){memcol(2) = int(refstr)}
-	if INIGet("Swap","red"){swapcol(0) = int(refstr)}
-	if INIGet("Swap","green"){swapcol(1) = int(refstr)}
-	if INIGet("Swap","blue"){swapcol(2) = int(refstr)}
-	if INIGet("Theme","red"){theme(0) = int(refstr)}
-	if INIGet("Theme","green"){theme(1) = int(refstr)}
-	if INIGet("Theme","blue"){theme(2) = int(refstr)}
-	if INIGet("GraphBak","red"){graph(0) = int(refstr)}
-	if INIGet("GraphBak","green"){graph(1) = int(refstr)}
-	if INIGet("GraphBak","blue"){graph(2) = int(refstr)}
-	if INIGet("Line","red"){lin(0) = int(refstr)}
-	if INIGet("Line","green"){lin(1) = int(refstr)}
-	if INIGet("Line","blue"){lin(2) = int(refstr)}
-	if INIGet("Char","red"){char(0) = int(refstr)}
-	if INIGet("Char","green"){char(1) = int(refstr)}
-	if INIGet("Char","blue"){char(2) = int(refstr)}
+	if INIGet("Memory","red"){memcol(0) = int(refstr)} else {INISet "Memory","red","255" : memcol(0) = 255}
+	if INIGet("Memory","green"){memcol(1) = int(refstr)} else {INISet "Memory","green","0" : memcol(1) = 0}
+	if INIGet("Memory","blue"){memcol(2) = int(refstr)} else {INISet "Memory","blue","225" : memcol(2) = 225}
+	if INIGet("Swap","red"){swapcol(0) = int(refstr)} else {INISet "Swap","red","0" : swapcol(0) = 0}
+	if INIGet("Swap","green"){swapcol(1) = int(refstr)} else {INISet "Swap","green","186" : swapcol(1) = 186}
+	if INIGet("Swap","blue"){swapcol(2) = int(refstr)} else {INISet "Swap","blue","255" : swapcol(2) = 255}
+	if INIGet("Theme","red"){theme(0) = int(refstr)} else {INISet "Theme","red","64" : theme(0) = 64}
+	if INIGet("Theme","green"){theme(1) = int(refstr)} else {INISet "Theme","green","66" : theme(1) = 66}
+	if INIGet("Theme","blue"){theme(2) = int(refstr)} else {INISet "Theme","blue","79" : theme(2) = 79}
+	if INIGet("GraphBak","red"){graph(0) = int(refstr)} else {INISet "GraphBak","red","255" : graph(0) = 255}
+	if INIGet("GraphBak","green"){graph(1) = int(refstr)} else {INISet "GraphBak","green","255" : graph(1) = 255}
+	if INIGet("GraphBak","blue"){graph(2) = int(refstr)} else {INISet "GraphBak","blue","255" : graph(2) = 255}
+	if INIGet("Line","red"){lin(0) = int(refstr)} else {INISet "Line","red","200" : lin(0) = 200}
+	if INIGet("Line","green"){lin(1) = int(refstr)} else {INISet "Line","green","200" : lin(1) = 200}
+	if INIGet("Line","blue"){lin(2) = int(refstr)} else {INISet "Line","blue","200" : lin(2) = 200}
+	if INIGet("Char","red"){char(0) = int(refstr)} else {INISet "Char","red","255" : char(0) = 255}
+	if INIGet("Char","green"){char(1) = int(refstr)} else {INISet "Char","green","255" : char(1) = 255}
+	if INIGet("Char","blue"){char(2) = int(refstr)} else {INISet "Char","blue","255" : char(2) = 255}
+	if INIGet("Font","name"){Font ""+refstr, 16, 17} else {INISet "Font","name","ＭＳ ゴシック" : font "Arial", 16, 17}
+	if INIGet("Lang","name"){lang = refstr} else {INISet "Lang","name","JP" : lang = "JP"}
+	if INIGet("Tick","timing"){tmp = int(refstr) : tick = (500*tmp)/cores} else {INISet "Tick","timing","2" : tmp = 2 : tick = (500*tmp)/cores}
+}
+if lang == "JP" {
+	title "システムモニター | ("+(500*tmp)+"ms)"
+} else {
+	title "System Monitor | ("+(500*tmp)+"ms)"
 }
 color 64, 66, 79 : boxf
 dimtype use, vartype("int"), 131, cores+1
@@ -105,8 +119,13 @@ dimtype swapuse, vartype("int"), 131
 		color char(0), char(1), char(2)
 		pos ginfo(12)-215, 15 : mes ""+strf("%d/%02d/%02d %02d:%02d:%02d", gettime(0), gettime(1), gettime(3), gettime(4), gettime(5), gettime(6))
 		timeGetTime
-		mes ""+strf("%02d日 %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
-		pos 15, 15 : mes "CPU 使用率の履歴"
+		if lang == "JP" {
+			mes ""+strf("%02d日 %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
+			pos 15, 15 : mes "CPU 使用率の履歴"
+		} else {
+			mes ""+strf("%d Days %02d:%02d:%02d", (stat / 86400000), (stat / 3600000 \ 24), (stat / 60000 \ 60), (stat / 1000 \ 60))
+			pos 15, 15 : mes "CPU Usage history"
+		}
 		mes "CPU : "+processor.getName
 		color graph(0), graph(1), graph(2)
 		boxf 80, 80, ginfo(12)-116, 180*mp
@@ -114,7 +133,11 @@ dimtype swapuse, vartype("int"), 131
 		w = (ginfo(12)-195)/6
 		sec = (ginfo(12)-195)/((120/tmp)-1)
 		color char(0), char(1), char(2)
-		pos 75, 190*mp : mes ""+(120/tmp)+"秒"
+		if lang == "JP" {
+			pos 75, 190*mp : mes ""+(120/tmp)+"秒"
+		} else {
+			pos 75, 190*mp : mes ""+(120/tmp)+"s"
+		}
 		pos 75+w, 190*mp : mes ""+((120/tmp)-(20/tmp))
 		pos 75+w*2, 190*mp : mes ""+((120/tmp)-(40/tmp))
 		pos 75+w*3, 190*mp : mes ""+((120/tmp)-(60/tmp))
@@ -211,29 +234,54 @@ dimtype swapuse, vartype("int"), 131
 		swap = (map / 100) * stime
 		//Variables end
 		color char(0), char(1), char(2)
-		pos 15, (ramy) : mes "メモリとスワップの履歴"
-		if stime < time {
-			color 200, 0, 0
-			if stime > 80 {
-				mes "警告 : Out of Swap"
-			} else : if time > 80 {
-				mes "警告 : Out of Memory"
+		if lang == "JP" {
+			pos 15, (ramy) : mes "メモリとスワップの履歴"
+			if stime < time {
+				color 200, 0, 0
+				if stime > 80 {
+					mes "警告 : Out of Swap"
+				} else : if time > 80 {
+					mes "警告 : Out of Memory"
+				}
 			}
-		}
-		if max > 12.0 {
-			if (max - mem) < 4.0 {
-				color 255, 225, 0
-				mes "注意 : Free Memory is Low"
+			if max > 12.0 {
+				if (max - mem) < 4.0 {
+					color 255, 225, 0
+					mes "注意 : Free Memory is Low"
+				}
+			} else : if max < 4.0 {
+				color 200, 0, 0
+				mes "情報 : Memory is Low"
 			}
-		} else : if max < 4.0 {
-			color 200, 0, 0
-			mes "情報 : Memory is Low"
+		} else {
+			pos 15, (ramy) : mes "Memory and Swap history"
+			if stime < time {
+				color 200, 0, 0
+				if stime > 80 {
+					mes "Warn : Out of Swap"
+				} else : if time > 80 {
+					mes "Warn : Out of Memory"
+				}
+			}
+			if max > 12.0 {
+				if (max - mem) < 4.0 {
+					color 255, 225, 0
+					mes "Note : Free Memory is Low"
+				}
+			} else : if max < 4.0 {
+				color 200, 0, 0
+				mes "Info : Memory is Low"
+			}
 		}
 		color graph(0), graph(1), graph(2)
 		boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
 		w = (ginfo(12)-195)/6
 		color char(0), char(1), char(2)
-		pos 75, ramy+175*mp : mes ""+(120/tmp)+"秒"
+		if lang == "JP" {
+			pos 75, ramy+175*mp : mes ""+(120/tmp)+"秒"
+		} else {
+			pos 75, ramy+175*mp : mes ""+(120/tmp)+"s"
+		}
 		pos 75+w, ramy+175*mp : mes ""+((120/tmp)-(20/tmp))
 		pos 75+w*2, ramy+175*mp : mes ""+((120/tmp)-(40/tmp))
 		pos 75+w*3, ramy+175*mp : mes ""+((120/tmp)-(60/tmp))
@@ -304,7 +352,11 @@ dimtype swapuse, vartype("int"), 131
 			mem = double(double(mem) / double(1024.0))
 			tania = "TiB"
 		}
-		color char(0), char(1), char(2) : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" "+tania+" ("+time+"%) / "+strf("%3.1f", max)+" "+tanib
+		if lang == "JP" {
+			color char(0), char(1), char(2) : pos 155, ramy+175*mp+22 : mes "メモリ" : mes "" : mes ""+strf("%3.1f", mem)+" "+tania+" ("+time+"%) / "+strf("%3.1f", max)+" "+tanib
+		} else {
+			color char(0), char(1), char(2) : pos 155, ramy+175*mp+22 : mes "Memory" : mes "" : mes ""+strf("%3.1f", mem)+" "+tania+" ("+time+"%) / "+strf("%3.1f", max)+" "+tanib
+		}
 		color swapcol(0), swapcol(1), swapcol(2)
 	//	circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
 		fan 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55, 75+(w*4)-15+sin(b)*100, ramy+175*mp+40+cos(b)*100, 75+(w*4)-15, ramy+175*mp+25
@@ -315,7 +367,11 @@ dimtype swapuse, vartype("int"), 131
 			swap = double(double(swap) / double(1024.0))
 			tanic = "TiB"
 		}
-		color char(0), char(1), char(2) : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
+		if lang == "JP" {
+			color char(0), char(1), char(2) : pos 75+(w*4)+20, ramy+175*mp+22 : mes "スワップ" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
+		} else {
+			color char(0), char(1), char(2) : pos 75+(w*4)+20, ramy+175*mp+22 : mes "Swap" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
+		}
 		color theme(0), theme(1), theme(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
 		color theme(0), theme(1), theme(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
 		
@@ -392,8 +448,13 @@ dimtype swapuse, vartype("int"), 131
 		memuse(cnt, 31) = null
 		swapuse(cnt, 31) = null
 	loop
-	title "システムモニター | (1000ms)"
+	if lang == "JP" {
+		title "システムモニター | (1000ms)"
+	} else {
+		title "System Monitor | (1000ms)"
+	}
 	tick = (500*tmp)/cores
+	INISet "Tick","timing","2"
 	return
 *sec_h
 	tmp = 1
@@ -408,8 +469,13 @@ dimtype swapuse, vartype("int"), 131
 		memuse(cnt, 31) = null
 		swapuse(cnt, 31) = null
 	loop
-	title "システムモニター | (500ms)"
+	if lang == "JP" {
+		title "システムモニター | (500ms)"
+	} else {
+		title "System Monitor | (500ms)"
+	}
 	tick = (500*tmp)/cores
+	INISet "Tick","timing","1"
 	return
 *get
 	dialog_color 2, RGB($FF,0,0)
