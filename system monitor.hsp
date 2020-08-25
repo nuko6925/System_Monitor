@@ -1,8 +1,11 @@
+#cmpopt varname 1
 #include "GetCPUPer.hsp"
 #include "MODULE_inim2.hsp"
 #include "Color_Api.hsp"
 #include "Fan_Api.hsp"
+#uselib "user32.dll"
 #include "user32.as"
+#func SetLayered "SetLayeredWindowAttributes" int,int,int,int
 #include "winmm.as"
 #uselib "KERNEL32.DLL"
 #func GlobalMemoryStatusEx "GlobalMemoryStatusEx" var
@@ -10,6 +13,9 @@
 #define HKEY_LOCAL_MACHINE	$80000002
 #define KEY_QUERY_VALUE	$00000001
 #define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
+#define		WM_LBUTTONDOWN		0x0201
+#define		WM_NCLBUTTONDOWN	0x00A1
+#define		HTCAPTION		2
 long=128
 sdim processor.getName, long
 RegOpenKeyEx HKEY_LOCAL_MACHINE,("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"),0,KEY_QUERY_VALUE,varptr(hkey)
@@ -23,7 +29,14 @@ cores = sysinfo(17)
 tmp = 2
 tick = (500*tmp)/cores
 mode = "resource"
-font "‚l‚r ƒSƒVƒbƒN", 16, 17
+wtype = false
+tog = 0
+trnsprnt = 100
+bold = 1
+fsize = 16
+xsize = 1280
+ysize = 720
+font "‚l‚r ƒSƒVƒbƒN", fsize, (16+bold)
 dimtype memcol, vartype("int"), 3
 dimtype swapcol, vartype("int"), 3
 dimtype theme, vartype("int"), 3
@@ -52,9 +65,16 @@ if strsize = -1 {
 	INISet "Char","red","255"
 	INISet "Char","green","255"
 	INISet "Char","blue","255"
+	INISet "Font","bold","1"
+	INISet "Font","size","16"
 	INISet "Font","name","‚l‚r ƒSƒVƒbƒN"
 	INISet "Lang","name","JP"
 	INISet "Tick","timing","2"
+	INISet "Transparent","toggle","0"
+	INISet "Transparent","alpha","100"
+	INISet "Window","borderless","false"
+	INISet "Window","width","1280"
+	INISet "Window","height","720"
 	memcol(0) = 255 : memcol(1) = 0 : memcol(2) = 225
 	swapcol(0) = 0 : swapcol(1) = 186 : swapcol(2) = 255
 	theme(0) = 64 : theme(1) = 66 : theme(2) = 79
@@ -64,6 +84,8 @@ if strsize = -1 {
 	tmp = 2
 	tick = (500*tmp)/cores
 	lang = "JP"
+	tog = 0
+	trnsprnt = 100
 } else {
 	INIInit "SysMonitor.ini"
 	if INIGet("Memory","red"){memcol(0) = int(refstr)} else {INISet "Memory","red","255" : memcol(0) = 255}
@@ -84,14 +106,56 @@ if strsize = -1 {
 	if INIGet("Char","red"){char(0) = int(refstr)} else {INISet "Char","red","255" : char(0) = 255}
 	if INIGet("Char","green"){char(1) = int(refstr)} else {INISet "Char","green","255" : char(1) = 255}
 	if INIGet("Char","blue"){char(2) = int(refstr)} else {INISet "Char","blue","255" : char(2) = 255}
-	if INIGet("Font","name"){Font ""+refstr, 16, 17} else {INISet "Font","name","‚l‚r ƒSƒVƒbƒN" : font "Arial", 16, 17}
+	if INIGet("Font","bold"){bold = int(refstr)} else {INISet "Font","bold","1" : bold = 1}
+	if INIGet("Font","size"){fsize = int(refstr)} else {INISet "Font","size","16" : fsize = 16}
+	if INIGet("Font","name"){fon = refstr} else {INISet "Font","name","‚l‚r ƒSƒVƒbƒN"}
 	if INIGet("Lang","name"){lang = refstr} else {INISet "Lang","name","JP" : lang = "JP"}
 	if INIGet("Tick","timing"){tmp = int(refstr) : tick = (500*tmp)/cores} else {INISet "Tick","timing","2" : tmp = 2 : tick = (500*tmp)/cores}
+	if INIGet("Transparent","toggle"){tog = int(refstr)} else {INISet "Transparent","toggle","0" : tog = 0}
+	if INIGet("Transparent","alpha"){trnsprnt = int(refstr)} else {INISet "Transparent","alpha","100" : trnsprnt = 100}
+	if INIGet("Window","borderless"){wtype = refstr} else {INISet "Window","borderless","false"}
+	if INIGet("Window","width"){xsize = int(refstr)} else {INISet "Window","width","1280" : xsize = 1280}
+	if INIGet("Window","height"){ysize = int(refstr)} else {INISet "Window","height","720" : ysize = 720}
+	if INIGet("Window","dtx"){launchx = int(refstr)}
+	if INIGet("Window","dty"){launchy = int(refstr)}
+}
+if wtype == "true" {
+	bgscr 0, ginfo(20), ginfo(21)
+	GetWindowLong hwnd, -16
+	SetWindowLong hwnd, -16, stat | $10000 | $40000
+	width 1280, 720, launchx, launchy
+}
+if tog == 1 {
+	GetWindowLongA hwnd, -20
+	SetWindowLongA hwnd, -20, stat | 0x00080000
+	SetLayered hwnd, 0, trnsprnt, 2
 }
 if lang == "JP" {
 	title "ƒVƒXƒeƒ€ƒ‚ƒjƒ^[ | ("+(500*tmp)+"ms)"
 } else {
 	title "System Monitor | ("+(500*tmp)+"ms)"
+}
+if fon != null {
+	font fon, fsize, (16+bold)
+} else {
+	font "Arial", 16, (16+bold)
+}
+if xsize != null {
+	if ysize != null {
+		width xsize, ysize, launchx, launchy
+	} else {
+		width xsize, 720, launchx, launchy
+		ysize = 720
+	}
+} else {
+	if ysize != null {
+		width 1280, ysize, launchx, launchy
+		xsize = 1280
+	} else {
+		width 1280, 720, launchx, launchy
+		xsize = 1280
+		ysize = 720
+	}
 }
 color 64, 66, 79 : boxf
 dimtype use, vartype("int"), 131, cores+1
@@ -100,6 +164,10 @@ dimtype swapuse, vartype("int"), 131
 *main
 	getkey left, 1
 	getkey right, 2
+	onexit goto *save_prof
+	if wtype == "true" {
+		oncmd gosub *LBUTTONDOWN,WM_LBUTTONDOWN
+	}
 	redraw 1 : await 20 : redraw 0
 
 	//CPU start
@@ -478,6 +546,9 @@ dimtype swapuse, vartype("int"), 131
 	tick = (500*tmp)/cores
 	INISet "Tick","timing","1"
 	return
+*LBUTTONDOWN
+	sendmsg hwnd,WM_NCLBUTTONDOWN,HTCAPTION,0
+	return
 *get
 	dialog_color 2, RGB($FF,0,0)
 	if stat == 1 {
@@ -504,3 +575,9 @@ dimtype swapuse, vartype("int"), 131
 		}
 	}
 	return
+*save_prof
+	INISet "Window","width",""+(ginfo(12)+10)
+	INISet "Window","height",""+(ginfo(13)+10)
+	INISet "Window","dtx",""+ginfo(4)
+	INISet "Window","dty",""+ginfo(5)
+	end
