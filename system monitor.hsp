@@ -5,6 +5,7 @@
 #include "Fan_Api.hsp"
 #uselib "user32.dll"
 #include "user32.as"
+#include "mod_img.as"
 #func SetLayered "SetLayeredWindowAttributes" int,int,int,int
 #include "winmm.as"
 #uselib "KERNEL32.DLL"

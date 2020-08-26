@@ -1,5 +1,6 @@
 #include "MODULE_inim2.hsp"
 #include "Color_Api.hsp"
+#include "mod_img.as"
 #define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
 dimtype memcol, vartype("int"), 3
 dimtype swapcol, vartype("int"), 3
@@ -393,7 +394,7 @@ stop
 	INISet "Window","alwaysontop","false"
 	goto *main
 *w_change
-	dialog "jpg;*.jpeg;*.bmp", 16
+	dialog "jpg;*.jpeg;*.bmp;*.png;*.gif;*.ico", 16
 	if stat == 1 {
 		wallpaper = refstr
 		INISet "Window","wallpaper",""+refstr
