@@ -1,0 +1,416 @@
+#include "MODULE_inim2.hsp"
+#include "Color_Api.hsp"
+#define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
+dimtype memcol, vartype("int"), 3
+dimtype swapcol, vartype("int"), 3
+dimtype theme, vartype("int"), 3
+dimtype graph, vartype("int"), 3
+dimtype lin, vartype("int"), 3
+dimtype char, vartype("int"), 3
+dimtype fon, vartype("str"), 1
+wallpaper = "0"
+screen 0, 1280, 720
+exist "SysMonitor.ini"
+if strsize == -1 {
+	dialog "設定ファイル SysMonitor.ini が見つかりません。"
+	INIInit "SysMonitor.ini"
+	INISet "Memory","red","255"
+	INISet "Memory","green","0"
+	INISet "Memory","blue","225"
+	INISet "Swap","red","0"
+	INISet "Swap","green","186"
+	INISet "Swap","blue","255"
+	INISet "Theme","red","64"
+	INISet "Theme","green","66"
+	INISet "Theme","blue","79"
+	INISet "GraphBak","red","255"
+	INISet "GraphBak","green","255"
+	INISet "GraphBak","blue","255"
+	INISet "Line","red","200"
+	INISet "Line","green","200"
+	INISet "Line","blue","200"
+	INISet "Char","red","255"
+	INISet "Char","green","255"
+	INISet "Char","blue","255"
+	INISet "Font","bold","1"
+	INISet "Font","size","16"
+	INISet "Font","name","ＭＳ ゴシック"
+	INISet "Lang","name","JP"
+	INISet "Tick","timing","2"
+	INISet "Transparent","toggle","0"
+	INISet "Transparent","alpha","255"
+	INISet "Window","borderless","false"
+	INISet "Window","width","1280"
+	INISet "Window","height","720"
+	INISet "Window","alwaysontop","false"
+	INISet "Window","wallpaper","0"
+	end
+} else {
+	INIInit "SysMonitor.ini"
+	if INIGet("Memory","red"){memcol(0) = int(refstr)} else {INISet "Memory","red","255" : memcol(0) = 255}
+	if INIGet("Memory","green"){memcol(1) = int(refstr)} else {INISet "Memory","green","0" : memcol(1) = 0}
+	if INIGet("Memory","blue"){memcol(2) = int(refstr)} else {INISet "Memory","blue","225" : memcol(2) = 225}
+	if INIGet("Swap","red"){swapcol(0) = int(refstr)} else {INISet "Swap","red","0" : swapcol(0) = 0}
+	if INIGet("Swap","green"){swapcol(1) = int(refstr)} else {INISet "Swap","green","186" : swapcol(1) = 186}
+	if INIGet("Swap","blue"){swapcol(2) = int(refstr)} else {INISet "Swap","blue","255" : swapcol(2) = 255}
+	if INIGet("Theme","red"){theme(0) = int(refstr)} else {INISet "Theme","red","64" : theme(0) = 64}
+	if INIGet("Theme","green"){theme(1) = int(refstr)} else {INISet "Theme","green","66" : theme(1) = 66}
+	if INIGet("Theme","blue"){theme(2) = int(refstr)} else {INISet "Theme","blue","79" : theme(2) = 79}
+	if INIGet("GraphBak","red"){graph(0) = int(refstr)} else {INISet "GraphBak","red","255" : graph(0) = 255}
+	if INIGet("GraphBak","green"){graph(1) = int(refstr)} else {INISet "GraphBak","green","255" : graph(1) = 255}
+	if INIGet("GraphBak","blue"){graph(2) = int(refstr)} else {INISet "GraphBak","blue","255" : graph(2) = 255}
+	if INIGet("Line","red"){lin(0) = int(refstr)} else {INISet "Line","red","200" : lin(0) = 200}
+	if INIGet("Line","green"){lin(1) = int(refstr)} else {INISet "Line","green","200" : lin(1) = 200}
+	if INIGet("Line","blue"){lin(2) = int(refstr)} else {INISet "Line","blue","200" : lin(2) = 200}
+	if INIGet("Char","red"){char(0) = int(refstr)} else {INISet "Char","red","255" : char(0) = 255}
+	if INIGet("Char","green"){char(1) = int(refstr)} else {INISet "Char","green","255" : char(1) = 255}
+	if INIGet("Char","blue"){char(2) = int(refstr)} else {INISet "Char","blue","255" : char(2) = 255}
+	if INIGet("Font","bold"){bold = int(refstr)} else {INISet "Font","bold","1" : bold = 1}
+	if INIGet("Font","size"){fsize = int(refstr)} else {INISet "Font","size","16" : fsize = 16}
+	if INIGet("Font","name"){fon = refstr} else {INISet "Font","name","ＭＳ ゴシック" : fon = "Arial"}
+	if INIGet("Lang","name"){lang = refstr} else {INISet "Lang","name","JP" : lang = "JP"}
+	if INIGet("Transparent","toggle"){tog = int(refstr)} else {INISet "Transparent","toggle","0" : tog = 0}
+	if INIGet("Transparent","alpha"){trnsprnt = int(refstr)} else {INISet "Transparent","alpha","255" : trnsprnt = 255}
+	if INIGet("Window","borderless"){wtype = refstr} else {INISet "Window","borderless","false"}
+	if INIGet("Window","alwaysontop"){aot = refstr} else {INISet "Window","alwaysontop","false"}
+	if INIGet("Window","wallpaper"){wallpaper = refstr} else {INISet "Window","wallpaper","0"}
+}
+if wallpaper != "0" {
+	buffer 2
+	picload wallpaper
+	bufx = ginfo(12) : bufy = ginfo(13)
+	gsel 0
+}
+color theme(0), theme(1), theme(2) : boxf
+objsize 180, 16
+*init
+if lang == "JP" {
+	title "簡易設定"
+	pos 15, 15
+	button goto "メモリカラー", *getm
+	pos 15, 40
+	button goto "スワップカラー", *gets
+	pos 15, 65
+	button goto "ウインドウテーマ", *gett
+	pos 15, 90
+	button goto "グラフ背景色", *getg
+	pos 15, 115
+	button goto "罫線の色", *getl
+	pos 15, 140
+	button goto "文字の色", *getc
+	pos 220, 165 : button goto "太字", *f_bold
+	pos 220, 190 : button goto "斜体", *f_italic
+	pos 220, 215 : button goto "太字+斜体", *f_bolic
+	pos 220, 240 : button goto "通常", *f_normal
+	pos 220, 265 : button goto "日本語", *l_jp
+	pos 220, 290 : button goto "英語(US)", *l_us
+	pos 220, 315 : button goto "有効", *t_true
+	pos 220, 340 : button goto "無効", *t_false
+	pos 15, 365
+	button goto "透明度を調整", *open_tr
+	pos 220, 390 : button goto "有効", *f_true
+	pos 220, 415 : button goto "無効", *f_false
+	pos 220, 440 : button goto "有効", *a_true
+	pos 220, 465 : button goto "無効", *a_false
+	pos 220, 490 : button goto "変更", *w_change
+	pos 410, 490 : button goto "削除", *w_reset
+} else {
+	title "GUI Settings"
+	pos 15, 15
+	button goto "Memory Color", *getm
+	pos 15, 40
+	button goto "Swap Color", *gets
+	pos 15, 65
+	button goto "Window Theme", *gett
+	pos 15, 90
+	button goto "Graph Background", *getg
+	pos 15, 115
+	button goto "Line Color", *getl
+	pos 15, 140
+	button goto "Text Color", *getc
+	pos 220, 165 : button goto "Bold", *f_bold
+	pos 220, 190 : button goto "Italic", *f_italic
+	pos 220, 215 : button goto "Bold + Italic", *f_bolic
+	pos 220, 240 : button goto "Normal", *f_normal
+	pos 220, 265 : button goto "Japanese", *l_jp
+	pos 220, 290 : button goto "English(US)", *l_us
+	pos 220, 315 : button goto "Enable", *t_true
+	pos 220, 340 : button goto "Disable", *t_false
+	pos 15, 365
+	button goto "Adjust clarity", *open_tr
+	pos 220, 390 : button goto "Enable", *f_true
+	pos 220, 415 : button goto "Disable", *f_false
+	pos 220, 440 : button goto "Enable", *a_true
+	pos 220, 465 : button goto "Disable", *a_false
+	pos 220, 490 : button goto "Change", *w_change
+	pos 410, 490 : button goto "Reset", *w_reset
+	
+}
+*main
+	font fon, fsize, (16+bold)
+	color theme(0), theme(1), theme(2) : boxf
+	if bufx != null {
+		pos 0, 0 : gzoom ginfo(12), ginfo(13), 2, 0, 0, bufx, bufy
+	}
+	color lin(0), lin(1), lin(2) : line 0, 0, 600, 0 : line 0, 0, 0, 535
+	line 0, 160, 600, 160 : line 0, 260, 600, 260 : line 600, 0, 600, 535
+	line 0, 360, 600, 360 : line 0, 385, 600, 385 : line 0, 435, 600, 435
+	line 0, 485, 600, 485 : line 0, 535, 600, 535 : line 0, 310, 600, 310
+	color char(0), char(1), char(2)
+	pos 220, 15 : mes ""+memcol(0)+","+memcol(1)+","+memcol(2)
+	pos 220, 40 : mes ""+swapcol(0)+","+swapcol(1)+","+swapcol(2)
+	pos 220, 65 : mes ""+theme(0)+","+theme(1)+","+theme(2)
+	pos 220, 90 : mes ""+graph(0)+","+graph(1)+","+graph(2)
+	pos 220, 115 : mes ""+lin(0)+","+lin(1)+","+lin(2)
+	pos 220, 140 : mes ""+char(0)+","+char(1)+","+char(2)
+	pos 220, 365 : mes ""+trnsprnt+" ("+int((double(trnsprnt)/double(255.0))*double(100.0))+"%)"
+	color memcol(0), memcol(1), memcol(2) : boxf 320, 15, 450, 32
+	color swapcol(0), swapcol(1), swapcol(2) : boxf 320, 40, 450, 57
+	color graph(0), graph(1), graph(2) : boxf 320, 90, 450, 107
+	color lin(0), lin(1), lin(2) : boxf 320, 115, 450, 132
+	color char(0), char(1), char(2)
+	if lang == "JP" {
+		pos 15, 165 : mes "フォントスタイル"
+		pos 15, 265 : mes "言語"
+		pos 15, 315 : mes "透過ウインドウ"
+		if tog == 1 {
+			t_check = "有効"
+		} else {
+			t_check = "無効"
+		}
+		pos 420, 315 : mes "現在: "+t_check
+		pos 15, 390 : mes "枠なしウインドウ"
+		if wtype == "true" {
+			f_check = "有効"
+		} else {
+			f_check = "無効"
+		}
+		pos 420, 390 : mes "現在: "+f_check
+		pos 15, 440 : mes "最前面に表示"
+		if aot == "true" {
+			a_check = "有効"
+		} else {
+			a_check = "無効"
+		}
+		pos 420, 440 : mes "現在: "+a_check
+		pos 15, 490 : mes "壁紙"
+		if wallpaper == "0" {
+			wp = "無効"
+		} else {
+			wp = ""+wallpaper
+		}
+		pos 15, 515 : mes "現在: "+wp
+	} else {
+		pos 15, 165 : mes "Font Style"
+		pos 15, 265 : mes "Language"
+		pos 15, 315 : mes "Clarity"
+		if tog == 1 {
+			t_check = "Enabled"
+		} else {
+			t_check = "Disabled"
+		}
+		pos 420, 315 : mes "Currently: "+t_check
+		pos 15, 390 : mes "Borderless Window"
+		if wtype == "true" {
+			f_check = "Enabled"
+		} else {
+			f_check = "Disabled"
+		}
+		pos 420, 390 : mes "Currently: "+f_check
+		pos 15, 440 : mes "Always on Top"
+		if aot == "true" {
+			a_check = "Enabled"
+		} else {
+			a_check = "Disabled"
+		}
+		pos 420, 440 : mes "Currently: "+a_check
+		pos 15, 490 : mes "Wallpaper"
+		if wallpaper == "0" {
+			wp = "Disabled"
+		} else {
+			wp = ""+wallpaper
+		}
+		pos 15, 515 : mes "Currently: "+wp
+	}
+stop
+*getm
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		memcol(0) = ginfo(16) : memcol(1) = ginfo(17) : memcol(2) = ginfo(18)
+		INISet "Memory", "red", ""+ginfo(16)
+		INISet "Memory", "green", ""+ginfo(17)
+		INISet "Memory", "blue", ""+ginfo(18)
+	}
+	goto *main
+*gets
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		swapcol(0) = ginfo(16) : swapcol(1) = ginfo(17) : swapcol(2) = ginfo(18)
+		INISet "Swap", "red", ""+ginfo(16)
+		INISet "Swap", "green", ""+ginfo(17)
+		INISet "Swap", "blue", ""+ginfo(18)
+	}
+	goto *main
+
+*gett
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		theme(0) = ginfo(16) : theme(1) = ginfo(17) : theme(2) = ginfo(18)
+		INISet "Theme", "red", ""+ginfo(16)
+		INISet "Theme", "green", ""+ginfo(17)
+		INISet "Theme", "blue", ""+ginfo(18)
+	}
+	goto *main
+*getg
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		graph(0) = ginfo(16) : graph(1) = ginfo(17) : graph(2) = ginfo(18)
+		INISet "GraphBak", "red", ""+ginfo(16)
+		INISet "GraphBak", "green", ""+ginfo(17)
+		INISet "GraphBak", "blue", ""+ginfo(18)
+	}
+	goto *main
+*getl
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		lin(0) = ginfo(16) : lin(1) = ginfo(17) : lin(2) = ginfo(18)
+		INISet "Line", "red", ""+ginfo(16)
+		INISet "Line", "green", ""+ginfo(17)
+		INISet "Line", "blue", ""+ginfo(18)
+	}
+	goto *main
+*getc
+	dialog_color 2, RGB($FF,0,0)
+	if stat == 1 {
+		char(0) = ginfo(16) : char(1) = ginfo(17) : char(2) = ginfo(18)
+		INISet "Char", "red", ""+ginfo(16)
+		INISet "Char", "green", ""+ginfo(17)
+		INISet "Char", "blue", ""+ginfo(18)
+	}
+	goto *main
+*f_bold
+	bold = 1
+	INISet "Font","bold","1"
+	goto *main
+*f_italic
+	bold = 2
+	INISet "Font","bold","2"
+	goto *main
+*f_bolic
+	bold = 3
+	INISet "Font","bold","3"
+	goto *main
+*f_normal
+	bold = 0
+	INISet "Font","bold","0"
+	goto *main
+*l_jp
+	/*
+	if lang == "JP" {
+		dialog "言語は再起動後に適用されます。\n文字化けにご注意ください。"
+	} else {
+		dialog "The language will be applied after restart.\nPlease be careful of garbled text."
+	}
+	*/
+	lang == "JP"
+	INISet "Lang","name","JP"
+	clrobj
+	goto *init
+*l_us
+	/*
+	if lang == "JP" {
+		dialog "言語は再起動後に適用されます。\n文字化けにご注意ください。"
+	} else {
+		dialog "The language will be applied after restart.\nPlease be careful of garbled text."
+	}
+	*/
+	lang == "US"
+	INISet "Lang","name","US"
+	clrobj
+	goto *init
+*t_true
+	tog = 1
+	INISet "Transparent","toggle","1"
+	goto *main
+*t_false
+	tog = 0
+	INISet "Transparent","toggle","0"
+	goto *main
+*open_tr
+	gsel 0, -1
+	bgscr 1, 510, 96
+	selx = null
+	if lang == "JP" {
+		title "透明度の調整"
+	} else {
+		title "Adjust clarity"
+	}
+	pos ginfo(12)/2-25, 68 : button goto "OK", *finish
+	repeat
+		getkey left, 1
+		redraw 1 : await 20 : redraw 0
+		color theme(0), theme(1), theme(2) : boxf
+		color graph(0), graph(1), graph(2) : boxf 0, 0, 510, 32
+		color char(0), char(1), char(2) : pos 2, 40 : mes "0%" : pos ginfo(12)-38, 40 : mes "100%" : pos ginfo(12)/2-2, 40 : mes "50%"
+		line 0, 33, 0, 38 : line ginfo(12)-1, 33, ginfo(12)-1, 38 : line ginfo(12)/2, 33, ginfo(12)/2, 38
+		color 255, 0, 0 : line (trnsprnt*2-1), 0, (trnsprnt*2-1), 32
+		pos trnsprnt*2, 50 : mes ""+(trnsprnt)
+		if selx != null {
+			color 0, 255, 0 : line selx, 0, selx, 32
+			pos selx, 70 : mes ""+(selx/2+1)
+		}
+		if mousey >= 0 {
+			if mousey <= 32 {
+				if left == 1 {
+					selx = mousex
+				}
+			}
+		}
+	loop
+	stop
+*finish
+	gsel 1, -1
+	gsel 0, 1
+	if selx != null {
+		trnsprnt = selx/2+1
+		INISet "Transparent","alpha",""+trnsprnt
+	}
+	goto *main
+*f_true
+	wtype = "true"
+	INISet "Window","borderless","true"
+	goto *main
+*f_false
+	wtype = "false"
+	INISet "Window","borderless","false"
+	goto *main
+*a_true
+	aot = "true"
+	INISet "Window","alwaysontop","true"
+	goto *main
+*a_false
+	aot = "false"
+	INISet "Window","alwaysontop","false"
+	goto *main
+*w_change
+	dialog "jpg;*.jpeg;*.bmp", 16
+	if stat == 1 {
+		wallpaper = refstr
+		INISet "Window","wallpaper",""+refstr
+	}
+	if wallpaper != "0" {
+		buffer 2
+		picload wallpaper
+		bufx = ginfo(12) : bufy = ginfo(13)
+		gsel 0
+	}
+	goto *main
+*w_reset
+	wallpaper = "0"
+	INISet "Window","wallpaper","0"
+	if lang == "JP" {
+		dialog "壁紙のリセットは再起動後に適用されます。"
+	} else {
+		dialog "The wallpaper reset will be applied after the restart."
+	}
+	goto *main

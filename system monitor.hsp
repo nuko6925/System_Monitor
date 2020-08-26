@@ -30,12 +30,14 @@ tmp = 2
 tick = (500*tmp)/cores
 mode = "resource"
 wtype = false
+aot = false
 tog = 0
-trnsprnt = 100
+trnsprnt = 255
 bold = 1
 fsize = 16
 xsize = 1280
 ysize = 720
+wallpaper = "0"
 font "ÇlÇr ÉSÉVÉbÉN", fsize, (16+bold)
 dimtype memcol, vartype("int"), 3
 dimtype swapcol, vartype("int"), 3
@@ -71,10 +73,12 @@ if strsize = -1 {
 	INISet "Lang","name","JP"
 	INISet "Tick","timing","2"
 	INISet "Transparent","toggle","0"
-	INISet "Transparent","alpha","100"
+	INISet "Transparent","alpha","255"
 	INISet "Window","borderless","false"
 	INISet "Window","width","1280"
 	INISet "Window","height","720"
+	INISet "Window","alwaysontop","false"
+	INISet "Window","wallpaper","0"
 	memcol(0) = 255 : memcol(1) = 0 : memcol(2) = 225
 	swapcol(0) = 0 : swapcol(1) = 186 : swapcol(2) = 255
 	theme(0) = 64 : theme(1) = 66 : theme(2) = 79
@@ -85,7 +89,7 @@ if strsize = -1 {
 	tick = (500*tmp)/cores
 	lang = "JP"
 	tog = 0
-	trnsprnt = 100
+	trnsprnt = 255
 } else {
 	INIInit "SysMonitor.ini"
 	if INIGet("Memory","red"){memcol(0) = int(refstr)} else {INISet "Memory","red","255" : memcol(0) = 255}
@@ -112,12 +116,20 @@ if strsize = -1 {
 	if INIGet("Lang","name"){lang = refstr} else {INISet "Lang","name","JP" : lang = "JP"}
 	if INIGet("Tick","timing"){tmp = int(refstr) : tick = (500*tmp)/cores} else {INISet "Tick","timing","2" : tmp = 2 : tick = (500*tmp)/cores}
 	if INIGet("Transparent","toggle"){tog = int(refstr)} else {INISet "Transparent","toggle","0" : tog = 0}
-	if INIGet("Transparent","alpha"){trnsprnt = int(refstr)} else {INISet "Transparent","alpha","100" : trnsprnt = 100}
+	if INIGet("Transparent","alpha"){trnsprnt = int(refstr)} else {INISet "Transparent","alpha","255" : trnsprnt = 255}
 	if INIGet("Window","borderless"){wtype = refstr} else {INISet "Window","borderless","false"}
 	if INIGet("Window","width"){xsize = int(refstr)} else {INISet "Window","width","1280" : xsize = 1280}
 	if INIGet("Window","height"){ysize = int(refstr)} else {INISet "Window","height","720" : ysize = 720}
 	if INIGet("Window","dtx"){launchx = int(refstr)}
 	if INIGet("Window","dty"){launchy = int(refstr)}
+	if INIGet("Window","alwaysontop"){aot = refstr} else {INISet "Window","alwaysontop","false"}
+	if INIGet("Window","wallpaper"){wallpaper = refstr} else {INISet "Window","wallpaper","0"}
+}
+if wallpaper != "0" {
+	buffer 2
+	picload wallpaper
+	bufx = ginfo(12) : bufy = ginfo(13)
+	gsel 0
 }
 if wtype == "true" {
 	bgscr 0, ginfo(20), ginfo(21)
@@ -157,6 +169,9 @@ if xsize != null {
 		ysize = 720
 	}
 }
+if aot == "true" {
+	gsel 0, 2
+}
 color 64, 66, 79 : boxf
 dimtype use, vartype("int"), 131, cores+1
 dimtype memuse, vartype("int"), 131
@@ -174,6 +189,9 @@ dimtype swapuse, vartype("int"), 131
 	//Variables start
 	//Variables end
 	color theme(0), theme(1), theme(2) : boxf
+	if bufx != null {
+		pos 0, 0 : gzoom ginfo(12), ginfo(13), 2, 0, 0, bufx, bufy
+	}
 	if mode == "resource" {
 		clrobj
 		objsize 100, 16
@@ -183,7 +201,7 @@ dimtype swapuse, vartype("int"), 131
 			pos ginfo(12)-115, ginfo(13)-50 : button gosub "500ms", *sec_h
 		}
 		mp = ginfo(11) / 720
-		color theme(0), theme(1), theme(2) : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
+//		color theme(0), theme(1), theme(2) : boxf ginfo(12)/2 + 2, 2, ginfo(12)/2 + 450, 28
 		color char(0), char(1), char(2)
 		timeGetTime
 		if lang == "JP" {
@@ -265,7 +283,9 @@ dimtype swapuse, vartype("int"), 131
 			core++
 		loop
 	//	mes ""+((180*mp)-80)+" "+mp+" "+lencpu
-		color theme(0), theme(1), theme(2) : boxf 0, 80, 79, 180*mp
+		if wallpaper == "0" {
+			color theme(0), theme(1), theme(2) : boxf 0, 80, 79, 180*mp
+		}
 	/*	color 255, 225, 0
 		line 80, (180-timee)*mp, ginfo(12)-116, (180-timee)*mp
 		zero = strf("%3.1f", timee)
@@ -444,7 +464,9 @@ dimtype swapuse, vartype("int"), 131
 		color theme(0), theme(1), theme(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
 		color theme(0), theme(1), theme(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
 		
-		color theme(0), theme(1), theme(2) : boxf 0, ramy+65, 79, ramy+165*mp
+		if wallpaper == "0" {
+			color theme(0), theme(1), theme(2) : boxf 0, ramy+65, 79, ramy+165*mp
+		}
 		//Memory Color start
 		if right == 1 {
 			if ginfo(2) == 0 {
