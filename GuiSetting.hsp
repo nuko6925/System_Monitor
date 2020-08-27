@@ -5,7 +5,7 @@
 #uselib "comdlg32.dll"
 #func ChooseFont "ChooseFontW" int
 #define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
-#uselib "kernel32"
+#uselib "kernel32.dll"
 #func GetModuleFileName "GetModuleFileNameA" int, var, int
 mref bmscr, 67
 dim chfont,16
@@ -473,7 +473,9 @@ stop
 		fon = fontname2
 		Filepath = ""
 		GetModuleFileName 0, Filepath, 256
-		exec ""+Filepath+" ReStart"
+		Absolutepath = cnvatos(Filepath)
+		exec ""+Absolutepath, 0, "open"
+		await 100
 		end
 	}
 	goto *main
