@@ -1,7 +1,21 @@
 #include "MODULE_inim2.hsp"
 #include "Color_Api.hsp"
 #include "mod_img.as"
+#include "hsp3utf.as"
+#uselib "comdlg32.dll"
+#func ChooseFont "ChooseFontW" int
 #define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
+#uselib "kernel32"
+#func GetModuleFileName "GetModuleFileNameA" int, var, int
+mref bmscr, 67
+dim chfont,16
+dim logfont,16
+sdim fontname,32
+chfont.0 = 60
+chfont.1 = bmscr.13
+chfont.3=varptr(logfont)
+chfont.5 = 0x01000141
+pm=varptr(chfont)
 dimtype memcol, vartype("int"), 3
 dimtype swapcol, vartype("int"), 3
 dimtype theme, vartype("int"), 3
@@ -10,6 +24,7 @@ dimtype lin, vartype("int"), 3
 dimtype char, vartype("int"), 3
 dimtype fon, vartype("str"), 1
 wallpaper = "0"
+fonalert = "yes"
 screen 0, 1280, 720
 exist "SysMonitor.ini"
 if strsize == -1 {
@@ -45,6 +60,7 @@ if strsize == -1 {
 	INISet "Window","height","720"
 	INISet "Window","alwaysontop","false"
 	INISet "Window","wallpaper","0"
+	INISet "Font","alert","yes"
 	end
 } else {
 	INIInit "SysMonitor.ini"
@@ -69,6 +85,7 @@ if strsize == -1 {
 	if INIGet("Font","bold"){bold = int(refstr)} else {INISet "Font","bold","1" : bold = 1}
 	if INIGet("Font","size"){fsize = int(refstr)} else {INISet "Font","size","16" : fsize = 16}
 	if INIGet("Font","name"){fon = refstr} else {INISet "Font","name","ＭＳ ゴシック" : fon = "Arial"}
+	if INIGet("Font","alert"){fonalert = refstr} else {INISet "Font","alert","yes"}
 	if INIGet("Lang","name"){lang = refstr} else {INISet "Lang","name","JP" : lang = "JP"}
 	if INIGet("Transparent","toggle"){tog = int(refstr)} else {INISet "Transparent","toggle","0" : tog = 0}
 	if INIGet("Transparent","alpha"){trnsprnt = int(refstr)} else {INISet "Transparent","alpha","255" : trnsprnt = 255}
@@ -115,6 +132,7 @@ if lang == "JP" {
 	pos 220, 465 : button goto "無効", *a_false
 	pos 220, 490 : button goto "変更", *w_change
 	pos 410, 490 : button goto "削除", *w_reset
+	pos 220, 540 : button goto "変更", *f_change
 } else {
 	title "GUI Settings"
 	pos 15, 15
@@ -145,6 +163,7 @@ if lang == "JP" {
 	pos 220, 465 : button goto "Disable", *a_false
 	pos 220, 490 : button goto "Change", *w_change
 	pos 410, 490 : button goto "Reset", *w_reset
+	pos 220, 540 : button goto "Change", *f_change
 	
 }
 *main
@@ -153,10 +172,11 @@ if lang == "JP" {
 	if bufx != null {
 		pos 0, 0 : gzoom ginfo(12), ginfo(13), 2, 0, 0, bufx, bufy
 	}
-	color lin(0), lin(1), lin(2) : line 0, 0, 600, 0 : line 0, 0, 0, 535
-	line 0, 160, 600, 160 : line 0, 260, 600, 260 : line 600, 0, 600, 535
+	color lin(0), lin(1), lin(2) : line 0, 0, 600, 0 : line 0, 0, 0, 590
+	line 0, 160, 600, 160 : line 0, 260, 600, 260 : line 600, 0, 600, 590
 	line 0, 360, 600, 360 : line 0, 385, 600, 385 : line 0, 435, 600, 435
 	line 0, 485, 600, 485 : line 0, 535, 600, 535 : line 0, 310, 600, 310
+	line 0, 590, 600, 590
 	color char(0), char(1), char(2)
 	pos 220, 15 : mes ""+memcol(0)+","+memcol(1)+","+memcol(2)
 	pos 220, 40 : mes ""+swapcol(0)+","+swapcol(1)+","+swapcol(2)
@@ -167,6 +187,7 @@ if lang == "JP" {
 	pos 220, 365 : mes ""+trnsprnt+" ("+int((double(trnsprnt)/double(255.0))*double(100.0))+"%)"
 	color memcol(0), memcol(1), memcol(2) : boxf 320, 15, 450, 32
 	color swapcol(0), swapcol(1), swapcol(2) : boxf 320, 40, 450, 57
+	color theme(0), theme(1), theme(2) : boxf 320, 65, 450, 82
 	color graph(0), graph(1), graph(2) : boxf 320, 90, 450, 107
 	color lin(0), lin(1), lin(2) : boxf 320, 115, 450, 132
 	color char(0), char(1), char(2)
@@ -201,6 +222,9 @@ if lang == "JP" {
 			wp = ""+wallpaper
 		}
 		pos 15, 515 : mes "現在: "+wp
+		pos 15, 540 : mes "フォント"
+		pos 420, 540 : mes "現在: "+fon
+		pos 15, 565 : mes "非推奨"
 	} else {
 		pos 15, 165 : mes "Font Style"
 		pos 15, 265 : mes "Language"
@@ -232,6 +256,9 @@ if lang == "JP" {
 			wp = ""+wallpaper
 		}
 		pos 15, 515 : mes "Currently: "+wp
+		pos 15, 540 : mes "Font"
+		pos 420, 540 : mes "Currently: "+fon
+		pos 15, 565 : mes "Not recommended."
 	}
 stop
 *getm
@@ -413,5 +440,40 @@ stop
 		dialog "壁紙のリセットは再起動後に適用されます。"
 	} else {
 		dialog "The wallpaper reset will be applied after the restart."
+	}
+	goto *main
+*f_change
+	if fonalert == "yes" {
+		if lang == "JP" {
+			dialog "フォントを変更することは推奨されません。\nソフトウェアが正常に動作しなくなる可能性があります。\n\nフォントを変更しますか？", 3
+		} else {
+			dialog "Changing the font is not recommended.\nThe software may stop working properly.\n\nDo you want to change the font?", 3
+		}
+		if stat == 7 {
+			goto *main
+		} else : if stat == 6 {
+			INISet "Font","alert","no"
+		}
+	}
+	ChooseFont pm
+	if stat != 0 {
+		style = 0
+		if (chfont.12 & 0x0100) : style = style + 1
+		if (chfont.12 & 0x0200) : style = style + 2
+		if (logfont.5 & 0x0000FF00) : style = style + 4
+		if (logfont.5 & 0x00FF0000) : style = style + 8
+		size = chfont.4 / 10
+		memcpy fontname, logfont, 32, 0, 28
+		fontname2 = "";
+		fontname2 = cnvwtos(fontname)
+		font fontname2, size, style
+		INISet "Font","name",""+fontname2
+		INISet "Font","bold",""+style
+		INISet "Font","size",""+size
+		fon = fontname2
+		Filepath = ""
+		GetModuleFileName 0, Filepath, 256
+		exec ""+Filepath+" ReStart"
+		end
 	}
 	goto *main
