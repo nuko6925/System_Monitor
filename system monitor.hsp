@@ -3,9 +3,11 @@
 #include "MODULE_inim2.hsp"
 #include "Color_Api.hsp"
 #include "Fan_Api.hsp"
+#include "hspcv.as"
 #uselib "user32.dll"
 #include "user32.as"
 #include "mod_img.as"
+#include "hsp3utf.as"
 #func SetLayered "SetLayeredWindowAttributes" int,int,int,int
 #include "winmm.as"
 #uselib "KERNEL32.DLL"
@@ -215,8 +217,10 @@ dimtype swapuse, vartype("int"), 131
 			pos 15, 15 : mes "CPU Usage history"
 		}
 		mes "CPU : "+processor.getName
-		color graph(0), graph(1), graph(2)
-		boxf 80, 80, ginfo(12)-116, 180*mp
+		if wallpaper == "0" {
+			color graph(0), graph(1), graph(2)
+			boxf 80, 80, ginfo(12)-116, 180*mp
+		}
 		frame = (180*mp) - 180
 		w = (ginfo(12)-195)/6
 		sec = (ginfo(12)-195)/((120/tmp)-1)
@@ -363,8 +367,10 @@ dimtype swapuse, vartype("int"), 131
 				mes "Info : Memory is Low"
 			}
 		}
-		color graph(0), graph(1), graph(2)
-		boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
+		if wallpaper == "0" {
+			color graph(0), graph(1), graph(2)
+			boxf 80, (ramy+65), ginfo(12)-116, ramy+165*mp
+		}
 		w = (ginfo(12)-195)/6
 		color char(0), char(1), char(2)
 		if lang == "JP" {
@@ -414,8 +420,13 @@ dimtype swapuse, vartype("int"), 131
 		swapuse((120/tmp), now) = stime
 	
 	//	circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
-		color : circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
-		circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
+		if wallpaper == "0" {
+			color : circle 105, ramy+175*mp+25, 135, ramy+175*mp+55
+			circle 75+(w*4)-30, ramy+175*mp+25, 75+(w*4), ramy+175*mp+55
+		} else {
+			color lin(0), lin(1), lin(2) : circle 107, ramy+175*mp+27, 133, ramy+175*mp+53
+			circle 75+(w*4)-28, ramy+175*mp+27, 75+(w*4)-2, ramy+175*mp+53
+		}
 		
 		color memcol(0), memcol(1), memcol(2)
 		/*
@@ -462,8 +473,13 @@ dimtype swapuse, vartype("int"), 131
 		} else {
 			color char(0), char(1), char(2) : pos 75+(w*4)+20, ramy+175*mp+22 : mes "Swap" : mes "" : mes ""+strf("%3.1f", swap)+" "+tanic+" ("+stime+"%) / "+strf("%3.1f", map)+" "+tanid
 		}
-		color theme(0), theme(1), theme(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
-		color theme(0), theme(1), theme(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
+		if wallpaper == "0" {
+			color theme(0), theme(1), theme(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
+			color theme(0), theme(1), theme(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
+		}/* else {
+			color memcol(0), memcol(1), memcol(2) : circle 113, ramy+175*mp+33, 127, ramy+175*mp+47
+			color swapcol(0), swapcol(1), swapcol(2) : circle 75+(w*4)-22, ramy+175*mp+33, 75+(w*4)-8, ramy+175*mp+47
+		}*/
 		
 		if wallpaper == "0" {
 			color theme(0), theme(1), theme(2) : boxf 0, ramy+65, 79, ramy+165*mp
