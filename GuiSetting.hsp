@@ -1,4 +1,6 @@
+#cmpopt varname 1
 #include "MODULE_inim2.hsp"
+#include "hspcv.as"
 #include "Color_Api.hsp"
 #include "mod_img.as"
 #include "hsp3utf.as"
@@ -7,6 +9,8 @@
 #define ctype RGB(%1,%2,%3) (%1 | %2 << 8 | %3 << 16)
 #uselib "kernel32.dll"
 #func GetModuleFileName "GetModuleFileNameA" int, var, int
+#include "user32.as"
+#func SetLayered "SetLayeredWindowAttributes" int,int,int,int
 mref bmscr, 67
 dim chfont,16
 dim logfont,16
@@ -25,7 +29,11 @@ dimtype char, vartype("int"), 3
 dimtype fon, vartype("str"), 1
 wallpaper = "0"
 fonalert = "yes"
+trnsprnt = 255
 screen 0, 1280, 720
+GetWindowLongA hwnd, -20
+SetWindowLongA hwnd, -20, stat | 0x00080000
+SetLayered hwnd, 0, trnsprnt, 2
 exist "SysMonitor.ini"
 if strsize == -1 {
 	dialog "設定ファイル SysMonitor.ini が見つかりません。"
@@ -167,6 +175,11 @@ if lang == "JP" {
 	
 }
 *main
+	if tog == 1 {
+		SetLayered hwnd, 0, trnsprnt, 2
+	} else {
+		SetLayered hwnd, 0, 255, 2
+	}
 	font fon, fsize, (16+bold)
 	color theme(0), theme(1), theme(2) : boxf
 	if bufx != null {
@@ -367,7 +380,10 @@ stop
 *open_tr
 	gsel 0, -1
 	bgscr 1, 510, 96
-	selx = null
+	GetWindowLongA hwnd, -20
+	SetWindowLongA hwnd, -20, stat | 0x00080000
+	SetLayered hwnd, 0, 255, 2
+	selx = trnsprnt*2
 	if lang == "JP" {
 		title "透明度の調整"
 	} else {
@@ -394,6 +410,7 @@ stop
 				}
 			}
 		}
+		SetLayered hwnd, 0, selx/2+1, 2
 	loop
 	stop
 *finish
